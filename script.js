@@ -3,13 +3,13 @@ const operationButtons = document.querySelectorAll('[data-operation]');
 const deleteButton = document.querySelector('[data-delete]');
 const clearButton = document.querySelector('[data-clear]');
 const equalsButton = document.querySelector('[data-equals]');
-const previousTextElement = document.querySelector('[data-previous-operand]');
-const currentTextElement = document.querySelector('[data-current-operand]');
+const smallerTextElement = document.querySelector('[data-previous-operand]');
+const biggerTextElement = document.querySelector('[data-current-operand]');
 
 class Calculator {
-    constructor (previousTextElement, currentTextElement) {
-        this.currentTextElement = currentTextElement;
-        this.previousTextElement = previousTextElement;
+    constructor (smallerTextElement, biggerTextElement) {
+        this.biggerTextElement = biggerTextElement;
+        this.smallerTextElement = smallerTextElement;
         this.clear();
     }
     
@@ -20,7 +20,10 @@ class Calculator {
     clear() {
         this.currentOperand = '';
         this.previousOperand = '';
+        this.result = '';
         this.operation = '';
+        this.smallerTextElement.innerText = '';
+        this.biggerTextElement.innerText = '';
         this.updateDisplay();
     }
 
@@ -39,31 +42,42 @@ class Calculator {
 
     chooseOperation(operation) {
         if (this.currentOperand == '') return;
-        this.compute();
+        if (this.currentOperand != '' && this.previousOperand != '') {
+            this.compute();
+            this.operation = operation;
+            this.previousOperand = this.result;
+            this.currentOperand = '';
+            this.result = '';
+            return;
+        }
         this.operation = operation;
         this.previousOperand = this.currentOperand;
-        this.currentOperand = ''
+        this.currentOperand = '';
+        this.updateDisplay();
     }
 
     compute() {
         switch (this.operation) {
-            case '/': this.currentOperand = +this.previousOperand / +this.currentOperand; break;
-            case '*': this.currentOperand = +this.previousOperand * +this.currentOperand; break;
-            case '+': this.currentOperand = +this.previousOperand + +this.currentOperand; break;
-            case '-': this.currentOperand = +this.previousOperand - +this.currentOperand; break;
+            case '/': this.result = +this.previousOperand / +this.currentOperand; break;
+            case '*': this.result = +this.previousOperand * +this.currentOperand; break;
+            case '+': this.result = +this.previousOperand + +this.currentOperand; break;
+            case '-': this.result = +this.previousOperand - +this.currentOperand; break;
         }
-        this.previousOperand = '';
-        this.operation = '';
         this.updateDisplay()
     }
 
     updateDisplay() {
-        this.currentTextElement.innerText = this.currentOperand
-        this.previousTextElement.innerText = `${this.previousOperand}  ${this.operation}`
+        if (this.result === '') this.biggerTextElement.innerText = this.currentOperand
+        else {
+            this.biggerTextElement.innerText = this.result
+            this.smallerTextElement.innerText = `${this.previousOperand}  ${this.operation} ${this.currentOperand}`
+        }
+        if (this.currentOperand != '' && this.previousOperand == '') this.smallerTextElement.innerText = ''
+        if (this.operation != '' && this.currentOperand == '') this.smallerTextElement.innerText = `${this.previousOperand} ${this.operation}`
     }
 }
 
-const calculator = new Calculator(previousTextElement, currentTextElement)
+const calculator = new Calculator(smallerTextElement, biggerTextElement)
 
 clearButton.addEventListener('click', () => {
     calculator.clear()
